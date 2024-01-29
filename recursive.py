@@ -38,6 +38,7 @@ from libs.misc.saving_and_loading import (
 )
 from libs.misc.utils import get_session, get_env, get_inner_env
 from params_preprocessing import process_params
+from tqdm import tqdm
 
 
 def log_tabular_results(returns, itr, train_collection):
@@ -335,7 +336,7 @@ def train(params):
         algo.baseline.running_stats.update_stats(train_collection.data["observations"])
 
     # training
-    for itr in range(start_itr, end_itr):
+    for itr in tqdm(range(start_itr, end_itr)):
         if itr % interval == 0:
             if itr != 0:
                 logger.info("Collecting offline data with online interaction.")

@@ -120,6 +120,9 @@ class BinaryEnv:
         dataset_dict["dones_float"] = dones.astype(np.float32)
         return dataset_dict
 
+    def is_done(self, obs, next_obs):
+        return False
+
     def __getattr__(self, item):
         return getattr(self.env, item)
 
@@ -129,17 +132,17 @@ class DoorBinaryEnv(BinaryEnv):
         self.env = gym.make("door-binary-v0")
 
     def cost_np_vec(self, obs, acts, next_obs):
-        assert obs.shape == (39,)
+        assert len(obs.shape) == 2 and obs.shape[1] == 39
         assert self.reward_type == "binary"  # -1/0 rewards
-        _qp_1_minus2 = obs[:27]  # noqa
-        _latch_pos = obs[27]  # noqa
-        door_pos = obs[28]
-        _palm_pos = obs[29:32]  # noqa
-        _handle_pos = obs[32:35]  # noqa
-        _palm_pos_minus_handle_pos = obs[35:38]  # noqa
-        _door_open = obs[38]  # noqa
+        _qp_1_minus2 = obs[:, :27]  # noqa
+        _latch_pos = obs[:, 27]  # noqa
+        door_pos = obs[:, 28]
+        _palm_pos = obs[:, 29:32]  # noqa
+        _handle_pos = obs[:, 32:35]  # noqa
+        _palm_pos_minus_handle_pos = obs[:, 35:38]  # noqa
+        _door_open = obs[:, 38]  # noqa
 
-        goal_achieved = True if door_pos >= 1.35 else False
+        goal_achieved = door_pos >= 1.35
 
         reward = goal_achieved - 1
         return -reward
@@ -150,20 +153,20 @@ class PenBinaryEnv(BinaryEnv):
         self.env = gym.make("pen-binary-v0")
 
     def cost_np_vec(self, obs, acts, next_obs):
-        assert obs.shape == (45,)
+        assert len(obs.shape) == 2 and obs.shape[1] == 45
         assert self.reward_type == "binary"  # -1/0 rewards
-        _qp_0_minus6 = obs[:24]  # noqa
-        _obj_pos = obs[24:27]  # noqa
-        _obj_vel = obs[27:33]  # noqa
-        obj_orien = obs[33:36]
-        desired_orien = obs[36:39]
-        obj_pos_minus_desired_pos = obs[39:42]
-        _obj_orien_minus_desired_orien = obs[42:45]  # noqa
+        _qp_0_minus6 = obs[:, :24]  # noqa
+        _obj_pos = obs[:, 24:27]  # noqa
+        _obj_vel = obs[:, 27:33]  # noqa
+        obj_orien = obs[:, 33:36]
+        desired_orien = obs[:, 36:39]
+        obj_pos_minus_desired_pos = obs[:, 39:42]
+        _obj_orien_minus_desired_orien = obs[:, 42:45]  # noqa
 
-        dist = np.linalg.norm(obj_pos_minus_desired_pos)
-        orien_similarity = np.dot(obj_orien, desired_orien)
+        dist = np.linalg.norm(obj_pos_minus_desired_pos, axis=1)
+        orien_similarity = (obj_orien * desired_orien).sum(axis=1)
 
-        goal_achieved = True if (dist < 0.075 and orien_similarity > 0.95) else False
+        goal_achieved = np.logical_and(dist < 0.075, orien_similarity > 0.95)
 
         reward = goal_achieved - 1
         return -reward
@@ -174,17 +177,15 @@ class RelocateBinaryEnv(BinaryEnv):
         self.env = gym.make("relocate-binary-v0")
 
     def cost_np_vec(self, obs, acts, next_obs):
-        assert obs.shape == (39,)
+        assert len(obs.shape) == 2 and obs.shape[1] == 39
         assert self.reward_type == "binary"  # -1/0 rewards
 
-        _qp_0_minus6 = obs[:30]  # noqa
-        _palm_pos_minus_obj_pos = obs[30:33]  # noqa
-        _palm_pos_minus_target_pos = obs[33:36]  # noqa
-        obj_pos_minus_target_pos = obs[36:39]
+        _qp_0_minus6 = obs[:, :30]  # noqa
+        _palm_pos_minus_obj_pos = obs[:, 30:33]  # noqa
+        _palm_pos_minus_target_pos = obs[:, 33:36]  # noqa
+        obj_pos_minus_target_pos = obs[:, 36:39]
 
-        goal_achieved = (
-            True if np.linalg.norm(obj_pos_minus_target_pos) < 0.1 else False
-        )
+        goal_achieved = np.linalg.norm(obj_pos_minus_target_pos, axis=1) < 0.1
 
         reward = goal_achieved - 1
         return -reward
