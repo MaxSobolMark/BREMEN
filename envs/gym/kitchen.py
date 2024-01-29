@@ -8,6 +8,9 @@ class KitchenEnv:
         self.env = gym.make(kitchen_env_name)
         self.env.REMOVE_TASKS_WHEN_COMPLETE = False
 
+    def get_dataset(self):
+        return d4rl.qlearning_dataset(self.env)
+
     def cost_np_vec(self, obs, acts, next_obs):
         assert len(obs.shape) == 2 and obs.shape[1] == 60
         assert self.goal_concat

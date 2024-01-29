@@ -193,7 +193,11 @@ def train(params):
         # Use offline dataset
         offline_dataset = inner_env.get_dataset()
         # build paths
-        termination_indices = np.where(offline_dataset["dones_float"])[0]
+        if "kitchen" in params["env_name"]:
+            termination_key = "terminals"
+        else:
+            termination_key = "dones_float"
+        termination_indices = np.where(offline_dataset[termination_key])[0]
         indices = np.concatenate([[0], termination_indices + 1])
         paths = [
             Path(
