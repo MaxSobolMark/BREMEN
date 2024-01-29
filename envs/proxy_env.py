@@ -1,13 +1,13 @@
 from gym.core import Env
 from gym.spaces import Box as GymBox
+
 # from gym.wrappers.monitoring import Monitor
-from gym.wrappers import Monitor
+# from gym.wrappers import Monitor
 import numpy as np
 import tensorflow as tf
 
 
 class Box:
-
     def __init__(self, gym_box: GymBox):
         self.gym_box = gym_box
 
@@ -45,7 +45,6 @@ class Box:
 
 
 class ProxyEnv(Env):
-
     def __init__(self, wrapped_env: Env):
         self._wrapped_env = wrapped_env
         self._wrapped_observation_space = Box(wrapped_env.observation_space)
@@ -80,8 +79,9 @@ class ProxyEnv(Env):
         return self._wrapped_env.horizon
 
     def terminate(self):
-        if isinstance(self._wrapped_env, Monitor):
-            self._wrapped_env._close()
+        pass
+        # if isinstance(self._wrapped_env, Monitor):
+        #     self._wrapped_env._close()
 
     def get_param_values(self):
         return self._wrapped_env.get_param_values()
