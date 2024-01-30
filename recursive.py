@@ -41,14 +41,16 @@ from params_preprocessing import process_params
 from tqdm import tqdm
 
 
-def log_tabular_results(returns, itr, train_collection):
+def log_tabular_results(returns, max_rewards, itr, train_collection):
     logger.clear_tabular()
     logger.record_tabular("Iteration", itr)
     logger.record_tabular("episode_mean", np.mean(returns))
     logger.record_tabular("episode_min", np.min(returns))
     logger.record_tabular("episode_max", np.max(returns))
     logger.record_tabular("TotalSamples", train_collection.get_total_samples())
-
+    logger.record_tabular("max_episode_rewards_mean", np.mean(max_rewards))
+    logger.record_tabular("max_episode_rewards_min", np.min(max_rewards))
+    logger.record_tabular("max_episode_rewards_max", np.max(max_rewards))
     logger.dump_tabular()
 
 
@@ -471,7 +473,8 @@ def train(params):
             )
         logger.info("Done generating on-policy rollouts.")
         returns = np.array([sum(path["rewards"]) for path in rl_paths])
-        log_tabular_results(returns, itr, train_collection)
+        max_rewards = np.array([max(path["rewards"]) for path in rl_paths])
+        log_tabular_results(returns, max_rewards, itr, train_collection)
         if params["eval_model"]:
             n_transitions = sum([len(path["rewards"]) for path in rl_paths])
             # step_wise_analysis
