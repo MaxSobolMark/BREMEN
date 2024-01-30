@@ -31,7 +31,7 @@ class KitchenEnv:
         # reward = reward_dict["r_total"]
         reward = np.stack(
             [
-                self._get_reward_n_score(
+                self.env.unwrapped._get_reward_n_score(
                     {
                         "qp": qp[i],
                         "obj_qp": obj_qp[i],
