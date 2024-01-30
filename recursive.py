@@ -153,14 +153,13 @@ def train(params):
 
     rollout_sampler = RolloutSampler(env)
     behavior_policy_rollout_sampler = RolloutSampler(env)
+    num_paths = int(
+        params["n_train"]
+        * params["interval"]
+        / params["onpol_iters"]
+        / params["env_horizon"]
+    )
     if not params["use_offline_dataset"]:
-        num_paths = int(
-            params["n_train"]
-            * params["interval"]
-            / params["onpol_iters"]
-            / params["env_horizon"]
-        )
-
         random_paths = rollout_sampler.generate_random_rollouts(
             num_paths=num_paths, horizon=params["env_horizon"]
         )
